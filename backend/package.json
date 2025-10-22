@@ -1,0 +1,14 @@
+{
+    "name": "simple-node-backend",
+    "version": "1.0.0",
+    "description": "Simple Express server for data submission to MySQL.",
+    "main": "index.js",
+    "scripts": {
+      "start": "node index.js"
+    },
+    "dependencies": {
+      "express": "^4.19.2",
+      "mysql2": "^3.10.3",
+      "body-parser": "^1.20.2"
+    }
+  }
