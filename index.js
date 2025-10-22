@@ -11,7 +11,7 @@ const PORT = 3000;
 // We must explicitly allow requests from this origin.
 const corsOptions = {
     // Only allow requests from the specific frontend origin
-    origin: 'http://localhost:5500', 
+    origin:['http://localhost:5500', 'http://127.0.0.1:5500'],
     methods: 'POST, GET, OPTIONS',
     allowedHeaders: ['Content-Type'],
 };
