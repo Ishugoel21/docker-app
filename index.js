@@ -1,36 +1,42 @@
 const express = require('express');
 const mysql = require('mysql2');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // <-- ADDED: Import the CORS package
 
 const app = express();
 const PORT = 3000;
 
-// 1. Middleware
+// 1. CORS Configuration
+// CRITICAL FIX: The frontend is running on localhost:5500, making it a different origin.
+// We must explicitly allow requests from this origin.
+const corsOptions = {
+    // Only allow requests from the specific frontend origin
+    origin: 'http://localhost:5500', 
+    methods: 'POST, GET, OPTIONS',
+    allowedHeaders: ['Content-Type'],
+};
+
+// Apply the CORS middleware
+app.use(cors(corsOptions)); 
+
+// 2. Body Parsing Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// Enable CORS for the frontend running on a different origin (e.g., another container or port)
-app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); 
-    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    next();
-});
 
-// 2. Database Connection Configuration
-// IMPORTANT: Use 'db' as the hostname for Docker Compose networking
+// 3. Database Connection Configuration
+// IMPORTANT: Reads configuration from Docker Compose environment variables
 const db = mysql.createConnection({
     host: process.env.MYSQL_HOST, 
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
     database: process.env.MYSQL_DATABASE,
-   
 });
 
-// 3. Connect and Initialize
+// 4. Connect and Initialize
 db.connect(err => {
     if (err) {
+        // Log the error and exit the process/return early if DB connection fails
         console.error('Error connecting to MySQL:', err.stack);
-        // Will likely fail here if the DB container isn't up/ready
         return; 
     }
     console.log('Connected to MySQL as id ' + db.threadId);
@@ -51,7 +57,7 @@ db.connect(err => {
 });
 
 
-// 4. POST Route for Data Submission
+// 5. POST Route for Data Submission
 app.post('/submit', (req, res) => {
     const { name, value } = req.body;
 
@@ -72,6 +78,11 @@ app.post('/submit', (req, res) => {
             data: { name, value } 
         });
     });
+});
+
+// 6. Root Route (Optional but good for testing access)
+app.get('/', (req, res) => {
+    res.status(200).send('Node.js Backend is running and CORS is enabled for localhost:5500');
 });
 
 app.listen(PORT, () => {
